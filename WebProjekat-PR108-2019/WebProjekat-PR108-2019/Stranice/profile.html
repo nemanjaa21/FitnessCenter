@@ -1,0 +1,399 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Profil</title>
+    <script src="../Scripts/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+
+                $("#register").hide();
+                $("#logIn").hide();
+                
+            $("#logOutButton").click(function () {
+
+                window.localStorage.setItem("user", "neprijavljen")
+
+
+                $(window.location).attr('href', 'Login.html');
+            });
+
+
+            var id = localStorage.getItem("user");
+            console.log(id);
+            $.get("/api/Login/" + id, function (data, status) {
+                
+                let u = "";
+                if (data.Uloga == 0) {
+                    u = "Posetilac";
+                } else if (data.Uloga == 1) {
+                    u = "Trener";
+                } else if (data.Uloga == 2) {
+                    u = "Vlasnik";
+                }
+
+                
+                if (data.pol == 0) {
+                    
+                    $("#pol1").attr('checked', true);
+                    localStorage.setItem("polR", data.pol);
+                }
+                else if (data.pol == 1) {
+                    
+                    $("#pol2").attr('checked', true);
+                    localStorage.setItem("polR", data.pol);
+                }
+
+                let niz = data.DatumRodjenja.split('/');
+                let unosDatum = [niz[2], niz[1], niz[0]].join('-');
+              
+
+                $("#ime").val(data.Ime);
+                $("#prezime").val(data.Prezime);
+                $("#datum").val(unosDatum);
+                $("#korisnickoIme").val(data.KorisnickoIme);
+                $("#lozinka").val(data.Lozinka);
+                $("#email").val(data.Email);
+                $("#uloga").val(u);
+                
+
+            });
+
+
+            $(document).on("click", ".signupbtn", function () {
+
+                let korisnik = {
+                    KorisnickoIme: `${$('#korisnickoIme').val()}`,
+                    Lozinka: `${$('#lozinka').val()}`,
+                    Ime: `${$('#ime').val()}`,
+                    Prezime: `${$('#prezime').val()}`,
+                    pol: `${localStorage.getItem("polR")}`,
+                    DatumRodjenja: `${$('#datum').val()}`,
+                    Email: `${$('#email').val()}`
+                };
+
+                if (!Validacija(korisnik))
+                    return;
+
+                var niz = korisnik.DatumRodjenja.split('-');
+                korisnik.DatumRodjenja = [niz[2], niz[1], niz[0]].join('/');
+                var id = localStorage.getItem("user");
+                $.ajax({
+                    type: 'PUT',
+                    url: '/api/Login/' + id,
+                    data: JSON.stringify(korisnik),
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: function (data) {
+                        alert("Uspesno izmenjen korisnik '" + korisnik.KorisnickoIme + "'!");
+                        $(location).attr('href', 'profile.html');
+                    }
+                });
+            })
+
+
+        });
+
+
+        
+        function Validacija(korisnik) {
+            let vrednost = true;
+
+
+            if (korisnik.Ime === null || korisnik.Ime.length === 0) {
+                $("#ime").css("border", "5px solid red");
+                $("#greskaIme").html("Morate uneti ime!");
+                vrednost = false;
+            }
+            else {
+
+                $("#ime").css("border", "whitesmoke");
+                $("#greskaIme").html("");
+
+            }
+            if (korisnik.Prezime === null || korisnik.Prezime.length === 0) {
+                $("#prezime").css("border", "5px solid red");
+                $("#greskaPrezime").html("Morate uneti prezime!");
+                vrednost = false;
+            }
+            else {
+
+                $("#prezime").css("border", "whitesmoke");
+                $("#greskaPrezime").html("");
+
+            }
+            if (!$("input[name=pol]").is(":checked")) {
+                $("#polLabel").css("border", "5px solid red");
+                $("#greskaPol").html("Morate odabrati pol!");
+                vrednost = false;
+            }
+            else {
+
+                $("#polLabel").css("border", "whitesmoke");
+                $("#greskaPol").html("");
+
+            }
+            if (korisnik.DatumRodjenja === null || korisnik.DatumRodjenja.length === 0) {
+                $("#datum").css("border", "5px solid red");
+                $("#greskaDatum").html("Morate odabrati datum!");
+                vrednost = false;
+            }
+            else {
+
+                $("#datum").css("border", "whitesmoke");
+                $("#greskaDatum").html("");
+
+            }
+            if (korisnik.KorisnickoIme === null || korisnik.KorisnickoIme.length === 0) {
+                $("#korisnickoIme").css("border", "5px solid red");
+                $("#greskaKorisnickoIme").html("Morate uneti korisnicko ime!");
+                vrednost = false;
+            }
+            else {
+
+                $("#korisnickoIme").css("border", "whitesmoke");
+                $("#greskaKorisnickoIme").html("");
+
+            }
+            if (korisnik.Lozinka === null || korisnik.Lozinka.length === 0) {
+
+                $("#lozinka").css("border", "5px solid red");
+                $("#greskaLozinka").html("Morate uneti lozinku!");
+                vrednost = false;
+
+            }
+            else {
+
+                $("#lozinka").css("border", "whitesmoke");
+                $("#greskaLozinka").html("");
+
+            }
+            if (korisnik.Email === null || korisnik.Email.length === 0) {
+
+
+                $("#email").css("border", "5px solid red");
+                $("#greskaEmail").html("Morate uneti E-mail!");
+                vrednost = false;
+            }
+            else {
+                var regex = /\S+@\S+\.\S+/;
+                if ((regex.test(korisnik.Email))) {
+
+
+                    $("#email").css("border", "whitesmoke");
+                    $("#greskaEmail").html("");
+                }
+                else {
+                    $("#email").css("border", "5px solid red");
+                    $("#greskaEmail").html("E-mail format nije ispravan!");
+                    vrednost = false;
+                }
+            }
+            return vrednost;
+
+        }
+
+    </script>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background-color: teal;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+
+        input[type=text], input[type=password], input[type=email], input[type=date] {
+            width: 60%;
+            padding: 15px;
+            margin: 5px 0 22px 0;
+            display: inline-block;
+            border: none;
+            background: #f1f1f1;
+        }
+
+            input[type=text]:focus, input[type=password]:focus, input[type=email]:focus, input[type=date]:focus {
+                background-color: #ddd;
+                outline: none;
+            }
+
+        hr {
+            border: 1px solid #f1f1f1;
+            margin-bottom: 25px;
+        }
+
+        /* Set a style for all buttons */
+        button {
+            background-color: #04AA6D;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            opacity: 0.9;
+        }
+
+        #logOutButton {
+            border: none;
+        }
+
+        button:hover {
+            opacity: 1;
+        }
+
+        /* Extra styles for the cancel button */
+        .cancelbtn {
+            padding: 14px 20px;
+            background-color: #f44336;
+        }
+
+
+        /* Float cancel and signup buttons and add an equal width */
+        .signupbtn {
+            width: 50%;
+            background-color: darkgreen;
+            text-decoration-color: whitesmoke;
+        }
+
+        /* Add padding to container elements */
+        .container {
+            font-size: 20px;
+            color: white;
+            background-color: lightblue;
+            border: 1px solid navy;
+            margin-left: 20%;
+            margin-top: 2%;
+            margin-right: 22%;
+            margin-bottom: 2%;
+            border-radius: 40px;
+            font-family: 'Times New Roman', Times, serif;
+            box-shadow: -3px -3px 3px 3px rgba(238, 248, 1, 0.78);
+        }
+
+        /* Clear floats */
+        .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+
+        /* Change styles for cancel button and signup button on extra small screens */
+        @media screen and (max-width: 300px) {
+            .cancelbtn, .signupbtn {
+                width: 100%;
+            }
+        }
+
+        .navbar a, .navbar #logOutButton {
+            text-align: center;
+            text-decoration: solid;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 40px;
+            color: navy;
+            padding: 20px 20px;
+            background-color: teal;
+        }
+
+        #logOutButton {
+            border: none;
+        }
+
+        #naslov { /*za naslov*/
+            font-size: 60px;
+            font-family: 'Times New Roman', Times, serif;
+            color: navy;
+        }
+
+        .navbar a:hover {
+            background-color: teal;
+            color: lightgreen;
+        }
+
+        .header {
+            background-color: teal;
+            text-align: center;
+        }
+
+        #register {
+            text-align: right;
+        }
+        #istorija {
+            font-size: 60px;
+            color: navy;
+        }
+
+        .labele {
+            float: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <span class="navbar">
+            <a href="Index.html"><b>HOME</b></a>
+            <a id="register" href="Registracija.html"><b>REGISTER</b></a>
+            <a id="logIn" href="Login.html"><b>LOG IN</b></a>
+            <a id="profile" href="profile.html"><b>PROFILE</b></a>
+            <button id="logOutButton"><b>LOG OUT</b></button>
+
+        </span>
+        <hr id="razdvojnaLinija"> <br /><br />
+    </div>
+
+    <div align="center" class="container">
+        <h1 id="naslov">Pregled i izmena profila</h1>
+        <br />
+        <br />
+
+
+        <input id="ime" type="text" placeholder="Unesite ime" name="ime" required /> <br />
+        <label id="greskaIme" style="color:red;"></label><br />
+
+        <input id="prezime" type="text" placeholder="Unesite prezime" name="prezime" required /><br />
+        <label id="greskaPrezime" style="color:red;"></label><br />
+
+        <br />
+        <span style="margin-right:34.5%;">
+            <label id="polLabel" style="background-color:whitesmoke; color:gray; width:5px;">Odaberite pol:</label>
+            <input id="pol1" type="radio" style="background-size:20px;" value="M" name="pol" />M <input id="pol2" type="radio" value="Ž" name="pol" />Ž
+        </span>
+        <br />
+        <label id="greskaPol" style="color:red;"></label>
+        <br />
+        <br />
+
+        <input id="datum" type="date" placeholder="Unesite datum rođenja" name="datum" required /><br />
+        <label id="greskaDatum" style="color:red;"></label>
+        <br />
+
+
+        <input id="korisnickoIme" type="text" placeholder="Unesite korisnicko ime" name="korisnickoIme" required /><br />
+        <label id="greskaKorisnickoIme" style="color:red;"></label>
+        <br />
+        <input id="lozinka" type="password" placeholder="Unesite lozinku" name="lozinka" required /><br />
+        <label id="greskaLozinka" style="color:red;"></label>
+        <br />
+
+        <input id="email" type="email" placeholder="Unesite email" name="email" required /><br />
+        <label id="greskaEmail" style="color:red;"></label>
+        <br />
+
+
+        <input id="uloga" type="text" placeholder="Unesite ulogu" name="uloga" required /> <br />
+
+        <div class="clearfix">
+
+            <button class="signupbtn">Izmeni</button>
+        </div>
+    </div>
+    <br/> 
+    <br/>
+    <div align="center">
+        <a id="istorija" href="istorija.html"><b>ISTORIJA TRENINGA</b></a>
+    </div>
+
+</body>
+</html>

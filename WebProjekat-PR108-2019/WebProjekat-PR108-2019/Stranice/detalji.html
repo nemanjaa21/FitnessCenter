@@ -1,0 +1,328 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <script src="../Scripts/jquery-3.6.0.min.js"></script>
+    <title></title>
+    <style>
+        body{
+            background-color:teal;
+        }
+        
+        h1 {
+            font-size: 60px;
+            font-family: 'Times New Roman', Times, serif;
+            color: navy;
+        }
+        h2 {
+            font-size: 40px;
+            font-family: 'Times New Roman', Times, serif;
+            color: navy;
+        }
+        .tableOfGroupTr {
+            background-color: navy;
+            border-color: white;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: navy;
+            color: white;
+        }
+        tr:nth-child(odd) {
+            background-color: darkred;
+            color:white;
+        }
+        .tableHeaders {
+            color: white;
+            background-color: darkred;
+            font-size: 20px;
+            text-align: center;
+        }
+
+        .prijava, .prijava:visited {
+            background-color: white;
+            color: navy;
+            border: 2px solid teal;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 20px;
+        }
+
+            .prijava:hover, .prijava:active {
+                background-color: teal;
+                color: white;
+            }
+            #noviKomentar, #noviKomentar:visited {
+                background-color: white;
+                color: navy;
+                border: 2px solid teal;
+                padding: 10px 20px;
+                text-align: center;
+                text-decoration: none;
+                display: inline-block;
+                font-family: 'Times New Roman', Times, serif;
+                font-size: 20px;
+            }
+
+                #noviKomentar:hover, #noviKomentar:active {
+                    background-color: teal;
+                    color: white;
+                }
+                label{
+                    color:navy;
+                    font-size:20px;
+                }
+    </style>
+
+    <script>
+        
+        $(document).ready(function () {
+            var listaGrupnihTreninga = [];
+            console.log("Lista:" +listaGrupnihTreninga);
+            
+            detalji();
+            loadGrupniTrening();
+            PrijavaNaTrening();
+            
+            loadKomentari();
+            console.log("prosao liniju");
+
+            console.log(localStorage.getItem("user"));
+            console.log("Lista:" + listaGrupnihTreninga);
+
+            
+                $("#noviKomentar").click(function () {
+                    if (localStorage.getItem("user") !== "neprijavljen") {
+                        UpisiKomentar();
+                    } else {
+                        alert("Ne mozete da ostavite komentar u koliko niste ulogovani!");
+                    }
+
+                });
+           
+          
+
+        });
+        function PrijavaNaTrening() {
+
+            if (localStorage.getItem("user") !== "neprijavljen") {
+
+                $(document).on('click', '.prijava', function () {
+                    console.log("pogodio click");
+
+                    let naziv = $(this).attr('name');
+                    let trening = "";
+                    $.ajax({
+                        type: 'GET',
+                        url: '/api/Trening/' + naziv,
+                        success: function (data) {
+                            if (data && data.length != 0)
+                                trening = data;
+
+                        },
+                        async: false
+
+                    });
+
+                    console.log(trening);
+                    $.ajax({
+                        type: 'PUT',
+                        url: '/api/Posetilac/' + localStorage.getItem("user"),
+                        data: JSON.stringify(trening),
+                        contentType: 'application/json; charset=utf-8',
+                        datatype: 'json',
+
+
+                        success: function (data) {
+                            alert("Prijavili ste se na tening!")
+                            location.reload();
+                        },
+                        error: function (data) {
+
+                            alert("Neuspesna prijava! Već ste se prijavili ili je dostignut kapacitet.");
+                            console.log(data);
+                        },
+                        async: false
+
+
+
+                    });
+
+
+                }); 
+
+            }
+        }
+        function detalji() {
+
+
+            let naziv = window.location.href.split('=')[1];
+            $.get("/api/FitnesCentar/" + naziv, function (data, status) {
+                console.log(data);
+                var divDetalji = '<div align="center"> <h1 style="color:navy;"> Detalji o izabranom fitnes centru</h1>';
+               
+                    divDetalji += '</div>';
+                    divDetalji += '<div> <label><b>Naziv</b></label> <br/>' + data.Naziv + '<hr/>';
+                    divDetalji += '<label><b>Adresa</b></label> <br/>' + data.Adresa.UlicaIBroj + ', ' + data.Adresa.MestoiGrad + ', ' + data.Adresa.PostanskiBroj + '<hr/>';
+                    divDetalji += '<label><b>Godina otvaranja</b></label> <br/>' + data.GodinaOtvaranja + '<hr/>';
+                    divDetalji += '<label><b>Vlasnik</b></label> <br/>' + data.Vlasnik + '<hr/>';
+                    divDetalji += '<label><b>Cena mesecne clanarine</b></label> <br/>' + data.CenaMesecneClanarine + '<hr/>';
+                    divDetalji += '<label><b>Cena godisnje clanarine</b></label> <br/>' + data.CenaGodisnjeClanarine + '<hr/>';
+                    divDetalji += '<label><b>Cena treninga</b></label> <br/>' + data.CenaTreninga + '<hr/>';
+                    divDetalji += '<label><b>Cena grupnog treninga</b></label> <br/>' + data.CenaGrupnogTreninga + '<hr/>';
+                    divDetalji += '<label><b>Cena treninga sa trenerom</b></label> <br/>' + data.CenaTreningaSaTrenerom + '<br/>';
+                    divDetalji += '</div>';
+                    
+
+                $('#details').html(divDetalji);
+                console.log("prosao");
+              
+
+            });
+        }
+        function loadGrupniTrening() {
+            let naziv = window.location.href.split('=')[1];
+            
+            
+            console.log('Ucitavanje grupnih treninga...');
+            $.get("/api/GrupniTrening/" + naziv, function (data, status) {
+               
+                
+                let tip = "";
+                let tableOfGroupTr = '<table name="tableOfGroupTr" border="1" align="center">';
+                tableOfGroupTr += '<th class="tableHeaders">Naziv</th>';
+                tableOfGroupTr += '<th class="tableHeaders">Tip treninga</th>';
+                tableOfGroupTr += '<th class="tableHeaders">Trajanje treninga</th>';
+                tableOfGroupTr += '<th class="tableHeaders">Datum i vreme</th>';
+                tableOfGroupTr += '<th class="tableHeaders">Maksimalan broj posetilaca</th>';
+                tableOfGroupTr += '<th class="tableHeaders">Ukupan broj prijavljenih posetilaca</th>';
+                tableOfGroupTr += '<th class="tableHeaders">Naziv fitnes centra</th>';
+                tableOfGroupTr += '<th class="tableHeaders">Prijava za trening</th>';
+                
+                let brojac = 0;
+                for (element in data) {
+                    brojac += 1;
+                    let grupniTrening = '<td align="center">' + data[element].Naziv + '</td>';
+                    if (data[element].Tip == 0) { tip = "Yoga"; }
+                    else if (data[element].Tip == 1) { tip = "Les Mills Tone"; }
+                    else if(data[element].Tip == 2) { tip = "Body pump"; }
+                    grupniTrening += '<td align="center">' + tip + '</td>';
+                    grupniTrening += '<td align="center">' + data[element].TrajanjeTreninga + '</td>';
+                    grupniTrening += '<td align="center">' + data[element].DatumIVreme + '</td>';
+                    grupniTrening += '<td align="center">' + data[element].MaxBrojPosetilaca + '</td>';
+                    grupniTrening += '<td align="center">' + data[element].posetioci.length + '</td>';
+                    grupniTrening += '<td align="center">' + data[element].Centar.Naziv + '</td>';
+                    grupniTrening += `<td align="center"> <button name="${data[element].Naziv}" class="prijava"><b>Prijava</b></button></td>`;
+                    
+                    tableOfGroupTr += '<tr>' + grupniTrening + '</tr>';
+                   
+                }
+                tableOfGroupTr += '</table>';
+                $('#grupni').append(tableOfGroupTr);
+                
+                console.log('Grupni treninzi ucitani');
+            });
+        }
+
+        function loadKomentari( ) {
+            let naziv = window.location.href.split('=')[1];
+
+            console.log('Ucitavanje komentara...');
+            $.get("/api/Komentar/" + naziv, function (data, status) {
+                
+                let tableOfKom = '<table name="tableOfKomentari" border="1" align="center">';
+                tableOfKom += '<th class="tableHeaders">Posetilac</th>';
+                tableOfKom += '<th class="tableHeaders">Tekst komentara</th>';
+                tableOfKom += '<th class="tableHeaders">Ocena</th>';
+               
+                for (element in data) {
+                    
+                    let komentar = '<td align="center">' + data[element].Posetilac + '</td>';
+                    komentar += '<td align="center">' + data[element].TekstKomentara + '</td>';
+                    komentar += '<td align="center">' + data[element].Ocena + '</td>';
+                   
+
+                    tableOfKom += '<tr>' + komentar + '</tr>';
+
+                }
+                tableOfKom += '</table>';
+                $('#koment').append(tableOfKom);
+                console.log('Komentari ucitani');
+            });
+        }
+        function UpisiKomentar() {
+            let f = window.location.href.split('=')[1];
+            let items = f.replaceAll('%20',' ');
+
+            let komentar = {
+                
+                Posetilac: `${localStorage.getItem("user")}`,
+                FitnesCentar: `${items}`,
+                TekstKomentara: `${$('#tekstKomentara').val()}`,
+                Ocena: `${$('#ocena').val()}`
+            };
+            $.ajax({
+                type: 'PUT',
+                url: '/api/Komentar' ,
+                data: JSON.stringify(komentar),
+                contentType: 'application/json; charset=utf-8',
+                datatype: 'json',
+
+
+                success: function (data) {
+                    alert("Komentar uspesno upisan!")
+                    location.reload();
+                },
+                error: function (data) {
+
+                    alert("Morate biti prijavljeni na neki od treninga u ovom centru da bi komentarisali!");
+                    console.log(data);
+                },
+                async: false
+
+
+
+            });
+        }
+
+       
+
+    </script>
+</head>
+<body>
+
+
+    <div id="details"></div>
+    <br />
+    <div align="center"><h2>Grupni treninzi koje sadrzi izabrani fitnes centar</h2></div>
+    <div id="grupni"></div>
+    <div align="center"><h2>Komentari za ovaj fitnes centar</h2></div>
+    <div id="koment"></div>
+
+    <div align="center">
+    <h2>Upisite novi komentar:</h2>
+    <table>
+        <tr>
+            <td>Tekst:</td>
+            <td><input id="tekstKomentara" type="text" name="tekstKomentara" /></td>
+        </tr>
+        <tr>
+            <td>Ocena:</td>
+            <td><input id="ocena" type="text" name="ocena" /></td>
+        </tr>
+        <tr>
+            <td colspan="2"><button id="noviKomentar">Upisi novi komentar</button></td>
+        </tr>
+    </table>
+    </div>
+    <br/>
+    
+
+
+
+
+</body>
+</html>

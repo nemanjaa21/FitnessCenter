@@ -1,0 +1,307 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Log in</title>
+    <script src="../Scripts/jquery-3.6.0.min.js"></script>
+   
+    <script> 
+        console.log(localStorage.getItem("user"));
+        if (localStorage.getItem("user") !== "neprijavljen") {
+            $(location).attr('href', 'Index.html');
+        }
+        $(document).ready(function () {
+            $("#profile").hide();
+            $("#logOutButton").hide();
+                
+                $(".signupbtn").click(function () {
+                    let korisnik = {
+                        KorisnickoIme: `${$('#korisnickoIme').val()}`,
+                        Lozinka: `${$('#lozinka').val()}`
+                    };
+                    console.log(korisnik);
+                    console.log("usao");
+                    console.log(localStorage);
+
+                    if (!Validacija(korisnik.Lozinka, korisnik.KorisnickoIme)) {
+                        return;
+                    }
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '/api/Login',
+                        data: JSON.stringify(korisnik),
+                        contentType: 'application/json; charset=utf-8',
+                        dataType: 'json',
+
+                        success: function (data) {
+                            
+                            console.log(localStorage);
+                            localStorage.setItem("user", korisnik.KorisnickoIme);
+                            $(location).attr('href', 'Index.html');
+                            
+
+                        },
+                        error: function (data) {
+
+                            alert("Neuspesno logovanje!");
+                            console.log(data);
+                        }
+
+
+                    
+                    })
+                });
+        })
+
+        function Validacija(lozinka,korisnickoIme) {
+            let vrednost = true;
+
+            if (lozinka === null || lozinka.length === 0) {
+
+                $("#lozinka").css("border", "5px solid red");
+                $("#greskaLozinka").html("Morate uneti lozinku!");
+                vrednost = false;
+
+            }
+            else {
+
+                $("#lozinka").css("border", "whitesmoke");
+                $("#greskaLozinka").html("");
+
+            }
+            if (korisnickoIme === null || korisnickoIme.length === 0) {
+                $("#korisnickoIme").css("border", "5px solid red");
+                $("#greskaKorisnickoIme").html("Morate uneti korisnicko ime!");
+                vrednost = false;
+            }
+            else {
+
+                $("#korisnickoIme").css("border", "whitesmoke");
+                $("#greskaKorisnickoIme").html("");
+
+            }
+            
+            return vrednost;
+
+        }
+
+       
+    </script>
+    <style>
+        body {
+            background-color: teal;
+        }
+
+        .table th {
+            border-top: 2px solid #009578;
+            border-bottom: 2px solid #009578;
+        }
+
+        .table td,
+        .search-input {
+            font-size: 1em;
+            padding: 0.6em 1em;
+        }
+        #logOutButton {
+            border: none;
+        }
+
+        .search-input {
+            border: none;
+            outline: none;
+            font-family: 'Times New Roman', Times, serif;
+            width: 85%;
+            text-align: center;
+        }
+
+        .tableOfFitnes {
+            background-color: navy;
+            border-color: white;
+            color: white;
+        }
+
+        a.two:link, a.two:visited {
+            background-color: white;
+            color: navy;
+            border: 2px solid teal;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        a.two:hover, a.two:active {
+            background-color: teal;
+            color: white;
+        }
+
+
+        .tableHeaders {
+            color: white;
+            background-color: darkred;
+            font-size: 20px;
+            text-align: center;
+        }
+
+        tr:nth-child(even) {
+            background-color: darkred;
+        }
+
+        .navbar a, .navbar #logOutButton {
+            text-align: center;
+            text-decoration: solid;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 40px;
+            color: navy;
+            padding: 20px 20px;
+            background-color: teal;
+        }
+
+        #logOutButton {
+            border-color: navy;
+        }
+
+        #fitnesCentri { /*za naslov*/
+            font-size: 60px;
+            font-family: 'Times New Roman', Times, serif;
+            color: navy;
+        }
+
+        .navbar a:hover {
+            background-color: navy;
+            color: lightgreen;
+        }
+
+        .navbar #logOutButton:hover {
+            background-color: navy;
+            color: lightgreen;
+        }
+
+        .header {
+            background-color: teal;
+            text-align: center;
+        }
+
+        #register {
+            text-align: right;
+        }
+
+        #searchText, .searchText1 {
+            padding: 20px;
+            margin-bottom: 5px;
+            width: 200px;
+            border-width: 4px;
+            border-color: red;
+        }
+
+        .sortButtons {
+            width: 45%;
+            height: 60%;
+            background-color: lightblue;
+            color: navy;
+            font-size: 20px;
+        }
+
+        .sortButtons:hover {
+            background-color: teal;
+            color: white;
+        }
+
+        input[type=text], input[type=password], input[type=email], input[type=date] {
+            width: 60%;
+            padding: 15px;
+            margin: 5px 0 22px 0;
+            display: inline-block;
+            border: none;
+            background: #f1f1f1;
+        }
+
+        input[type=text]:focus, input[type=password]:focus, input[type=email]:focus, input[type=date]:focus {
+            background-color: #ddd;
+            outline: none;
+        }
+
+        .container {
+            font-size: 20px;
+            color: white;
+            background-color: lightblue;
+            border: 1px solid navy;
+            margin-left: 20%;
+            margin-top: 2%;
+            margin-right: 22%;
+            margin-bottom: 2%;
+            border-radius: 40px;
+            font-family: 'Times New Roman', Times, serif;
+            box-shadow: -3px -3px 3px 3px rgba(238, 248, 1, 0.78);
+        }
+        .signupbtn {
+            width: 50%;
+            background-color: darkgreen;
+            text-decoration-color: whitesmoke;
+        }
+        #naslov { /*za naslov*/
+            font-size: 60px;
+            font-family: 'Times New Roman', Times, serif;
+            color: navy;
+        }
+        button {
+            background-color: #04AA6D;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            opacity: 0.9;
+        }
+
+            button:hover {
+                opacity: 1;
+            }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <span class="navbar">
+            <a href="Index.html"><b>HOME</b></a>
+            <a id="register" href="Registracija.html"><b>REGISTER</b></a>
+            <a id="logIn" href="Login.html"><b>LOG IN</b></a>
+            <a id="profile" href="profile.html"><b>PROFILE</b></a>
+            <button id="logOutButton"><b>LOG OUT</b></button>
+
+        </span>
+        <br />
+        <br />
+        <hr id="razdvojnaLinija">
+    </div>
+
+    <div align="center" class="container">
+        <h1 id="naslov">Prijava na nalog</h1>
+
+
+        <label class="labele"></label><br />
+        <input type="text" id="korisnickoIme" placeholder="Unesite korisnicko ime" name="korisnickoIme" required /><br />
+        <br />
+        <label id="greskaKorisnickoIme" style="color:red";></label>
+        <br />
+        <br />
+
+        <label class="labele"></label> <br />
+        <input type="password" id="lozinka" placeholder="Unesite lozinku" name="lozinka" required /><br />
+        <br />
+        <label id="greskaLozinka" style="color:red";></label>
+        <br />
+        <br />
+
+
+        <div class="clearfix">
+
+            <button type="submit" class="signupbtn">Prijavi se</button>
+            <br />
+            <br />
+            <br />
+        </div>
+    </div>
+</body>
+</html>

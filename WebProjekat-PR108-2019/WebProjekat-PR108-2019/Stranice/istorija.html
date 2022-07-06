@@ -1,0 +1,626 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <script src="../Scripts/jquery-3.6.0.min.js"></script>
+    <title>Istorija</title>
+    <script>
+        $(document).ready(function () {
+            $("#myInput").on("keyup", function () {
+                var value = $(this).val().toLowerCase();
+                $("#myTable tr").filter(function () {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+
+    </script>
+    <script>
+        $(document).ready(function () {
+            if (localStorage.getItem('user') !== "neprijavljen") {
+
+                grupTr = [];
+                nazivCheckBox = false;
+                tipTreningaCheckBox = false;
+                nazivFitCheckBox = false;
+                loadIstorijaTreninga();
+                
+                
+                $("#nazivCheckBox").change(function () {
+                    if (this.checked) {
+                        nazivCheckBox = true;
+                    } else {
+                        nazivCheckBox = false;
+                        $("#searchText").val("");
+                        Pretraga(grupTr, nazivCheckBox, tipTreningaCheckBox, nazivFitCheckBox);
+                    }
+                });
+                $("#tipCheckBox").change(function () {
+                    if (this.checked) {
+                        tipTreningaCheckBox = true;
+                    } else {
+                        tipTreningaCheckBox = false;
+                        $("#searchText1").val("");
+                        Pretraga(grupTr, nazivCheckBox, tipTreningaCheckBox, nazivFitCheckBox);
+                    }
+                });
+                $("#nazivFitCheckBox").change(function () {
+                    if (this.checked) {
+                        nazivFitCheckBox = true;
+                    } else {
+                        nazivFitCheckBox = false;
+                        $("#searchText2").val("");
+                        Pretraga(grupTr, nazivCheckBox, tipTreningaCheckBox, nazivFitCheckBox);
+                    }
+                });
+                $(document).on("click", "#searchButton", function () {
+                    Pretraga(grupTr, nazivCheckBox, tipTreningaCheckBox, nazivFitCheckBox);
+                });
+
+                
+                
+                
+            }
+        });
+    </script>
+    <script>
+        function loadIstorijaTreninga() {
+            let naziv = localStorage.getItem('user');
+
+
+            console.log('Ucitavanje grupnih treninga...');
+            $.get("/api/Posetilac/" + naziv, function (data, status) {
+                grupTr = data;
+
+                let tip = "";
+                let tableOfGroupTr = '<table id="myTable" name="tableOfGroupTr" border="1" align="center">';
+                tableOfGroupTr += '<th class="tableHeaders">Naziv</th>';
+                tableOfGroupTr += '<th class="tableHeaders">Tip treninga</th>';
+                tableOfGroupTr += '<th class="tableHeaders">Trajanje treninga</th>';
+                tableOfGroupTr += '<th class="tableHeaders">Datum i vreme</th>';
+                tableOfGroupTr += '<th class="tableHeaders">Maksimalan broj posetilaca</th>';
+                tableOfGroupTr += '<th class="tableHeaders">Ukupan broj prijavljenih posetilaca</th>';
+                tableOfGroupTr += '<th class="tableHeaders">Naziv fitnes centra</th>';
+
+
+                let brojac = 0;
+                for (element in data) {
+                    brojac += 1;
+                    let grupniTrening = '<td align="center">' + data[element].Naziv + '</td>';
+                    if (data[element].Tip == 0) { tip = "Yoga"; }
+                    else if (data[element].Tip == 1) { tip = "Les Mills Tone"; }
+                    else if (data[element].Tip == 2) { tip = "Body pump"; }
+                    grupniTrening += '<td align="center">' + tip + '</td>';
+                    grupniTrening += '<td align="center">' + data[element].TrajanjeTreninga + '</td>';
+                    grupniTrening += '<td align="center">' + data[element].DatumIVreme + '</td>';
+                    grupniTrening += '<td align="center">' + data[element].MaxBrojPosetilaca + '</td>';
+                    grupniTrening += '<td align="center">' + data[element].posetioci.length + '</td>';
+                    grupniTrening += '<td align="center">' + data[element].Centar.Naziv + '</td>';
+
+                    tableOfGroupTr += '<tr>' + grupniTrening + '</tr>';
+
+                }
+                tableOfGroupTr += '</table>';
+                $('#content').html(tableOfGroupTr);
+
+                console.log('Grupni treninzi ucitani');
+            });
+        }
+    </script>
+    <script>
+
+        function sortTableByNameRising() {
+            var table, rows, switching, i, x, y, shouldSwitch;
+            table = document.getElementById("myTable");
+            switching = true;
+
+            while (switching) {
+
+                switching = false;
+                rows = table.rows;
+
+                for (i = 1; i < (rows.length - 1); i++) {
+
+                    shouldSwitch = false;
+
+                    x = rows[i].getElementsByTagName("TD")[0];
+                    y = rows[i + 1].getElementsByTagName("TD")[0];
+
+                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+                if (shouldSwitch) {
+
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                }
+            }
+        }
+    </script>
+    <script>
+        function sortTableByNameFailing() {
+            var table, rows, switching, i, x, y, shouldSwitch;
+            table = document.getElementById("myTable");
+            switching = true;
+            while (switching) {
+
+                switching = false;
+                rows = table.rows;
+
+                for (i = 1; i < (rows.length - 1); i++) {
+
+                    shouldSwitch = false;
+
+                    x = rows[i].getElementsByTagName("TD")[0];
+                    y = rows[i + 1].getElementsByTagName("TD")[0];
+
+                    if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+                if (shouldSwitch) {
+
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                }
+            }
+        }
+    </script>
+    <script>
+
+        function sortTableByTrainingFailing() {
+            var table, rows, switching, i, x, y, shouldSwitch;
+            table = document.getElementById("myTable");
+            switching = true;
+            while (switching) {
+
+                switching = false;
+                rows = table.rows;
+
+                for (i = 1; i < (rows.length - 1); i++) {
+
+                    shouldSwitch = false;
+
+                    x = rows[i].getElementsByTagName("TD")[1];
+                    y = rows[i + 1].getElementsByTagName("TD")[1];
+
+                    if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+                if (shouldSwitch) {
+
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                }
+            }
+        }
+    </script>
+    <script>
+
+        function sortTableByTrainingRising() {
+            var table, rows, switching, i, x, y, shouldSwitch;
+            table = document.getElementById("myTable");
+            switching = true;
+            while (switching) {
+
+                switching = false;
+                rows = table.rows;
+
+                for (i = 1; i < (rows.length - 1); i++) {
+
+                    shouldSwitch = false;
+
+                    x = rows[i].getElementsByTagName("TD")[1];
+                    y = rows[i + 1].getElementsByTagName("TD")[1];
+
+                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+                if (shouldSwitch) {
+
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                }
+            }
+        }
+    </script>
+    <script>
+
+        function sortTableByDateRising() {
+            var table, rows, switching, i, x, y, shouldSwitch;
+            table = document.getElementById("myTable");
+            switching = true;
+            while (switching) {
+
+                switching = false;
+                rows = table.rows;
+
+                for (i = 1; i < (rows.length - 1); i++) {
+
+                    shouldSwitch = false;
+
+                    x = rows[i].getElementsByTagName("TD")[3];
+                    y = rows[i + 1].getElementsByTagName("TD")[3];
+
+                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+                if (shouldSwitch) {
+
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                }
+            }
+        }
+    </script>
+    <script>
+
+        function sortTableByDateFailing() {
+            var table, rows, switching, i, x, y, shouldSwitch;
+            table = document.getElementById("myTable");
+            switching = true;
+            while (switching) {
+
+                switching = false;
+                rows = table.rows;
+
+                for (i = 1; i < (rows.length - 1); i++) {
+
+                    shouldSwitch = false;
+
+                    x = rows[i].getElementsByTagName("TD")[3];
+                    y = rows[i + 1].getElementsByTagName("TD")[3];
+
+                    if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+                if (shouldSwitch) {
+
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                }
+            }
+        }
+    </script>
+    <script>
+
+        function Pretraga(listaGrupnihTreninga, NazivCheckBox, TipTreningaCheckBox,  NazivFitCheckBox) {
+            var array = [];
+
+            if (NazivCheckBox == false && TipTreningaCheckBox == false && NazivFitCheckBox == false) {
+                for (let i = 0; i < listaGrupnihTreninga.length; i++) {
+                    console.log("Usao u sve false");
+                    array.push(listaGrupnihTreninga[i]);
+                }
+            }
+
+            if (NazivCheckBox == true && TipTreningaCheckBox == false && NazivFitCheckBox == false) {
+                let naziv = $("#searchText").val();
+                for (let i = 0; i < listaGrupnihTreninga.length; i++) {
+                    if (listaGrupnihTreninga[i].Naziv === naziv) {
+                        console.log("Usao u naziv true");
+                        array.push(listaGrupnihTreninga[i]);
+                    }
+                }
+            }
+            if (NazivCheckBox == false && TipTreningaCheckBox == true && NazivFitCheckBox == false) {
+                let tip = $("#searchText1").val();
+                let t = "";
+                for (let i = 0; i < listaGrupnihTreninga.length; i++) {
+
+                    if (listaGrupnihTreninga[i].Tip == 0) {
+                        t = "Yoga";
+                    } else if (listaGrupnihTreninga[i].Tip == 1) {
+                        t = "Les Mils Tone";
+                    } else if (listaGrupnihTreninga[i].Tip == 2) {
+                        t = "Body pump";
+                    }
+
+                    if (t === tip)
+                    {
+                        console.log("Usao u tip true");
+                        array.push(listaGrupnihTreninga[i]);
+                    }
+                }
+            }
+            if (NazivCheckBox == false && TipTreningaCheckBox == false && NazivFitCheckBox == true) {
+                let nazivFit = $("#searchText2").val();
+                
+
+                for (let i = 0; i < listaGrupnihTreninga.length; i++) {
+                    if (listaGrupnihTreninga[i].Centar.Naziv === nazivFit)
+                    {
+                        console.log("Usao u naziv fit true");
+                        array.push(listaGrupnihTreninga[i]);
+                    }
+                }
+            }
+
+            if (NazivCheckBox == true && TipTreningaCheckBox == true && NazivFitCheckBox == false) {
+                let naziv = $("#searchText").val();
+                let tip = $("#searchText1").val();
+                let t = "";
+                
+                for (let i = 0; i < listaGrupnihTreninga.length; i++) {
+                    if (listaGrupnihTreninga[i].Tip == 0) {
+                        t = "Yoga";
+                    } else if (listaGrupnihTreninga[i].Tip == 1) {
+                        t = "Les Mils Tone";
+                    } else if (listaGrupnihTreninga[i].Tip == 2) {
+                        t = "Body pump";
+                    }
+
+                    if (listaGrupnihTreninga[i].Naziv === naziv || t === tip  )
+                    {
+                        console.log("Usao u naziv i adresa true");
+                        array.push(listaGrupnihTreninga[i]);
+                    }
+                }
+            }
+
+            if (NazivCheckBox == true && TipTreningaCheckBox == false && NazivFitCheckBox == true) {
+                let naziv = $("#searchText").val();
+                let nazivFit = $("#searchText2").val();
+
+                for (let i = 0; i < listaGrupnihTreninga.length; i++) {
+                    if (listaGrupnihTreninga[i].Naziv === naziv || listaGrupnihTreninga[i].Centar.Naziv === nazivFit)
+                    {
+                        console.log("Usao u naziv i godina true");
+                        array.push(listaGrupnihTreninga[i]);
+                    }
+                }
+            }
+
+            if (NazivCheckBox == false && TipTreningaCheckBox == true && NazivFitCheckBox == true) {
+                let tip = $("#searchText1").val();
+                let nazivFit = $("#searchText2").val();
+                let t = "";
+               
+                for (let i = 0; i < listaGrupnihTreninga.length; i++) {
+
+                    if (listaGrupnihTreninga[i].Tip == 0) {
+                         t = "Yoga";
+                    } else if (listaGrupnihTreninga[i].Tip == 1) {
+                         t = "Les Mils Tone";
+                    } else if (listaGrupnihTreninga[i].Tip == 2) {
+                         t = "Body pump";
+                    }
+
+                    if (t === tip || listaGrupnihTreninga[i].Centar.Naziv === nazivFit)
+                    {
+                        console.log("Usao u godina i adresa true");
+                        array.push(listaGrupnihTreninga[i]);
+                    }
+                }
+            }
+            if (NazivCheckBox == true && TipTreningaCheckBox == true && NazivFitCheckBox == true) {
+                let naziv = $("#searchText").val();
+                let tip = $("#searchText1").val();
+                let nazivFit = $("#searchText2").val();
+                let t = "";
+
+                for (let i = 0; i < listaGrupnihTreninga.length; i++) {
+
+                    if (listaGrupnihTreninga[i].Tip == 0) {
+                        t = "Yoga";
+                    } else if (listaGrupnihTreninga[i].Tip == 1) {
+                        t = "Les Mils Tone";
+                    } else if (listaGrupnihTreninga[i].Tip == 2) {
+                        t = "Body pump";
+                    }
+
+                    if (listaGrupnihTreninga[i].Naziv === naziv || t === tip || listaGrupnihTreninga[i].Centar.Naziv === nazivFit)
+                    {
+                        console.log("Usao u naziv ,adresa i godina true ");
+                        array.push(listaGrupnihTreninga[i]);
+                    }
+                }
+            }
+
+            let tip = "";
+            let tableOfGroupTr = '<table id="myTable" name="tableOfGroupTr" border="1" align="center">';
+            tableOfGroupTr += '<th class="tableHeaders">Naziv</th>';
+            tableOfGroupTr += '<th class="tableHeaders">Tip treninga</th>';
+            tableOfGroupTr += '<th class="tableHeaders">Trajanje treninga</th>';
+            tableOfGroupTr += '<th class="tableHeaders">Datum i vreme</th>';
+            tableOfGroupTr += '<th class="tableHeaders">Maksimalan broj posetilaca</th>';
+            tableOfGroupTr += '<th class="tableHeaders">Ukupan broj prijavljenih posetilaca</th>';
+            tableOfGroupTr += '<th class="tableHeaders">Naziv fitnes centra</th>';
+
+
+            let brojac = 0;
+            for (element in array) {
+                brojac += 1;
+                let grupniTrening = '<td align="center">' + array[element].Naziv + '</td>';
+                if (array[element].Tip == 0) { tip = "Yoga"; }
+                else if (array[element].Tip == 1) { tip = "Les Mills Tone"; }
+                else if (array[element].Tip == 2) { tip = "Body pump"; }
+                grupniTrening += '<td align="center">' + tip + '</td>';
+                grupniTrening += '<td align="center">' + array[element].TrajanjeTreninga + '</td>';
+                grupniTrening += '<td align="center">' + array[element].DatumIVreme + '</td>';
+                grupniTrening += '<td align="center">' + array[element].MaxBrojPosetilaca + '</td>';
+                grupniTrening += '<td align="center">' + array[element].posetioci.length + '</td>';
+                grupniTrening += '<td align="center">' + array[element].Centar.Naziv + '</td>';
+
+                tableOfGroupTr += '<tr>' + grupniTrening + '</tr>';
+
+            }
+            tableOfGroupTr += '</tbody>';
+            tableOfGroupTr += '</table>';
+            $('#content').html(tableOfGroupTr);
+            console.log('Grupni treninzi ucitani');
+
+        }
+    </script>
+    <style>
+        body {
+            background-color: teal;
+        }
+
+        #istorija {
+            font-size: 30px;
+            color: navy;
+        }
+
+        h1 {
+            font-size: 60px;
+            font-family: 'Times New Roman', Times, serif;
+            color: navy;
+        }
+
+        h2 {
+            font-size: 40px;
+            font-family: 'Times New Roman', Times, serif;
+            color: navy;
+        }
+
+        .tableOfGroupTr {
+            background-color: navy;
+            border-color: white;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: navy;
+            color: white;
+        }
+
+        tr:nth-child(odd) {
+            background-color: darkred;
+            color: white;
+        }
+
+        .tableHeaders {
+            color: white;
+            background-color: darkred;
+            font-size: 20px;
+            text-align: center;
+        }
+
+        .prijava, .prijava:visited {
+            background-color: white;
+            color: navy;
+            border: 2px solid teal;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 20px;
+        }
+
+            .prijava:hover, .prijava:active {
+                background-color: teal;
+                color: white;
+            }
+
+        #noviKomentar, #noviKomentar:visited {
+            background-color: white;
+            color: navy;
+            border: 2px solid teal;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 20px;
+        }
+
+            #noviKomentar:hover, #noviKomentar:active {
+                background-color: teal;
+                color: white;
+            }
+
+        #searchText, #searchText1, #searchText2, #searchText3, #myInput {
+            padding: 20px;
+            margin-bottom: 5px;
+            width: 180px;
+            border-width: 4px;
+            border-color: red;
+        }
+
+        .sortButtons {
+            width: 45%;
+            height: 60%;
+            background-color: lightblue;
+            color: navy;
+            font-size: 20px;
+        }
+
+            .sortButtons:hover {
+                background-color: teal;
+                color: white;
+            }
+
+
+        #searchButton {
+            background-color: lightblue;
+            color: navy;
+            font-size: 20px;
+        }
+
+            #searchButton:hover {
+                background-color: teal;
+                color: white;
+            }
+    </style>
+</head>
+
+<body>
+    <div align="center"><h1>Istorija grupnih treninga</h1></div>
+    <div align="center" id="content"></div>
+    
+    <div align="center">
+        <h1 id="kombinovana">Kombinovana pretraga</h1>
+        <div align="center" style="color:navy; font-size:30px;">
+            <b>Naziv:</b><input type="checkbox" id="nazivCheckBox">
+            <b>Tip:</b><input type="checkbox" id="tipCheckBox">
+            <b>Naziv fitnes centra:</b><input type="checkbox" id="nazivFitCheckBox">
+        </div>
+        <input type="text" id="searchText" placeholder="Unesite naziv za pretragu..." />
+        <input type="text" id="searchText1" placeholder="Unesite tip treninga..." />
+        <input type="text" id="searchText2"  placeholder="Unesite naziv fitnes centra...">
+        
+        <button id="searchButton">PRETRAGA</button>
+        <br />
+        <br />
+
+        <h1 id="ziva">Živa pretraga</h1>
+        <input type="text" id="myInput" placeholder="Unesite tekst za pretragu..." />
+
+        <br />
+        <br />
+        <h1 id="so">Sortiranja</h1>
+        <span>
+            <button class="sortButtons" onclick="sortTableByNameRising()"><b>Po imenu rastuće</b></button>
+            <button class="sortButtons" onclick="sortTableByNameFailing()"><b>Po imenu opadajuće</b></button>
+            <br />
+            <br />
+            <button class="sortButtons" onclick="sortTableByTrainingRising()"><b>Po tipu treninga rastuće</b></button>
+            <button class="sortButtons" onclick="sortTableByTrainingFailing()"><b>Po tipu treninga opadajuće</b></button>
+            <br />
+            <br />
+            <button class="sortButtons" onclick="sortTableByDateRising()"><b>Po datumu rastuće</b></button>
+            <button class="sortButtons" onclick="sortTableByDateFailing()"><b>Po datumu opadajuće</b></button>
+
+        </span>
+    </div>
+</body>
+</html>

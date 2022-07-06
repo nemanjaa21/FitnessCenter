@@ -1,0 +1,651 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="../Scripts/jquery-3.6.0.min.js"></script>
+    <!--za pretragu po tekstu-->
+    <script>
+        $(document).ready(function () {
+            $("#myInput").on("keyup", function () {
+                var value = $(this).val().toLowerCase();
+                $("#myTable tr").filter(function () {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+        
+    </script>
+ 
+    <script>
+        $(document).ready(function () {
+            lista = [];
+            var NazivCheckBox = false;
+            var GodinaCheckBox = false;
+            var AdresaCheckBox = false;
+            
+            loadFitnesCentri();
+
+            if (window.localStorage.getItem("user") === "neprijavljen") {
+
+                $("#logOutButton").hide();
+
+                $("#profile").hide();
+                $("#istorija").hide();
+            } else {
+
+
+                $("#logOutButton").show();
+
+                $("#profile").show();
+                $("#logIn").hide();
+                $("#register").hide();
+
+                $("#logOutButton").click(function () {
+
+                    window.localStorage.setItem("user", "neprijavljen")
+
+
+                    $(window.location).attr('href', 'Login.html');
+                });
+
+               
+            }
+            $("#godinaCheckBox").change(function () {
+                if (this.checked) {
+                    GodinaCheckBox = true;
+                } else {
+                    GodinaCheckBox = false;
+                    $("#searchText2").val("");
+                    $("#searchText3").val("");
+                    Pretraga(lista, AdresaCheckBox, NazivCheckBox, GodinaCheckBox);
+                }
+            });
+            $("#nazivCheckBox").change(function () {
+                if (this.checked) {
+                    NazivCheckBox = true;
+                } else {
+                    NazivCheckBox = false;
+                    $("#searchText").val("");
+                    Pretraga(lista, AdresaCheckBox, NazivCheckBox, GodinaCheckBox);
+                }
+            });
+            $("#adresaCheckBox").change(function () {
+                if (this.checked) {
+                    AdresaCheckBox = true;
+                } else {
+                    AdresaCheckBox = false;
+                    $("#searchText1").val("");
+                    Pretraga(lista, AdresaCheckBox, NazivCheckBox, GodinaCheckBox);
+                }
+            });
+            $(document).on("click", "#searchButton", function () {
+                Pretraga(lista, AdresaCheckBox, NazivCheckBox, GodinaCheckBox);
+            });
+
+            console.log("prosao liniju");
+        });
+        function loadFitnesCentri() {
+            console.log('Ucitavanje fitnes centara...');
+            $.get("/api/FitnesCentar", function (data, status) {
+                let tableOfFitnes = '<table id="myTable"  class="tableOfFitnes table table-bordered table-striped results" name="tableOfFitnes" border="1" align="center">';
+                tableOfFitnes += '<thead><tr class="trr"><th class="tableHeaders"></th><th class="tableHeaders" >Naziv</th><th class="tableHeaders">Adresa</th><th class="tableHeaders">Godina otvaranja</th><th class="tableHeaders">Detaljan prikaz</th></tr></thead>';
+                lista = data;
+                tableOfFitnes += '<tbody id="tabela">';
+
+                let brojac = 0;
+                for (element in data) {
+                    brojac += 1;
+                    let fitnesCentar = '<td align="center">' + brojac + '</td>';
+                    fitnesCentar += '<td align="center">' + data[element].Naziv + '</td>';
+                    fitnesCentar += '<td align="center" class="productClass">' + data[element].Adresa.UlicaIBroj + ', ' + data[element].Adresa.MestoiGrad + ', ' + data[element].Adresa.PostanskiBroj + '</td>';
+                    fitnesCentar += '<td align="center">' + data[element].GodinaOtvaranja + '</td>';
+                    fitnesCentar += '<td align="center"> <a class="two" href="detalji.html?naziv=' + data[element].Naziv + '"><b>Detalji</b></a></td>';
+                    tableOfFitnes += '<tr>' + fitnesCentar + '</tr>';
+
+                }
+                tableOfFitnes += '</tbody>';
+                tableOfFitnes += '</table>';
+                $('#content').append(tableOfFitnes);
+                console.log('Fitnes Centri ucitani');
+            });
+        }
+
+
+    </script>
+    <script>
+
+        function sortTableByNameRising() {
+            var table, rows, switching, i, x, y, shouldSwitch;
+            table = document.getElementById("myTable");
+            switching = true;
+
+            while (switching) {
+
+                switching = false;
+                rows = table.rows;
+
+                for (i = 1; i < (rows.length - 1); i++) {
+
+                    shouldSwitch = false;
+
+                    x = rows[i].getElementsByTagName("TD")[1];
+                    y = rows[i + 1].getElementsByTagName("TD")[1];
+
+                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+                if (shouldSwitch) {
+
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                }
+            }
+        }
+    </script>
+    <script>
+        function sortTableByNameFailing() {
+            var table, rows, switching, i, x, y, shouldSwitch;
+            table = document.getElementById("myTable");
+            switching = true;
+            while (switching) {
+
+                switching = false;
+                rows = table.rows;
+
+                for (i = 1; i < (rows.length - 1); i++) {
+
+                    shouldSwitch = false;
+
+                    x = rows[i].getElementsByTagName("TD")[1];
+                    y = rows[i + 1].getElementsByTagName("TD")[1];
+
+                    if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+                if (shouldSwitch) {
+
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                }
+            }
+        }
+    </script>
+    <script>
+
+        function sortTableByAddressFailing() {
+            var table, rows, switching, i, x, y, shouldSwitch;
+            table = document.getElementById("myTable");
+            switching = true;
+            while (switching) {
+
+                switching = false;
+                rows = table.rows;
+
+                for (i = 1; i < (rows.length - 1); i++) {
+
+                    shouldSwitch = false;
+
+                    x = rows[i].getElementsByTagName("TD")[2];
+                    y = rows[i + 1].getElementsByTagName("TD")[2];
+
+                    if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+                if (shouldSwitch) {
+
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                }
+            }
+        }
+    </script>
+    <script>
+
+        function sortTableByAddressRising() {
+            var table, rows, switching, i, x, y, shouldSwitch;
+            table = document.getElementById("myTable");
+            switching = true;
+            while (switching) {
+
+                switching = false;
+                rows = table.rows;
+
+                for (i = 1; i < (rows.length - 1); i++) {
+
+                    shouldSwitch = false;
+
+                    x = rows[i].getElementsByTagName("TD")[2];
+                    y = rows[i + 1].getElementsByTagName("TD")[2];
+
+                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+                if (shouldSwitch) {
+
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                }
+            }
+        }
+    </script>
+    <script>
+
+        function sortTableByYearRising() {
+            var table, rows, switching, i, x, y, shouldSwitch;
+            table = document.getElementById("myTable");
+            switching = true;
+            while (switching) {
+
+                switching = false;
+                rows = table.rows;
+
+                for (i = 1; i < (rows.length - 1); i++) {
+
+                    shouldSwitch = false;
+
+                    x = rows[i].getElementsByTagName("TD")[3];
+                    y = rows[i + 1].getElementsByTagName("TD")[3];
+
+                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+                if (shouldSwitch) {
+
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                }
+            }
+        }
+    </script>
+    <script>
+
+        function sortTableByYearFailing() {
+            var table, rows, switching, i, x, y, shouldSwitch;
+            table = document.getElementById("myTable");
+            switching = true;
+            while (switching) {
+
+                switching = false;
+                rows = table.rows;
+
+                for (i = 1; i < (rows.length - 1); i++) {
+
+                    shouldSwitch = false;
+
+                    x = rows[i].getElementsByTagName("TD")[3];
+                    y = rows[i + 1].getElementsByTagName("TD")[3];
+
+                    if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+                if (shouldSwitch) {
+
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                }
+            }
+        }
+    </script>
+    <script>
+
+        function Pretraga(listaFitnesCentara,AdresaCheckBox,NazivCheckBox,GodinaCheckBox)
+        {
+            var array = [];
+
+            if (NazivCheckBox == false && AdresaCheckBox == false && GodinaCheckBox == false) {
+                for (let i = 0; i < listaFitnesCentara.length; i++)
+                {
+                    console.log("Usao u sve false");
+                    array.push(listaFitnesCentara[i]);
+                }
+            }
+
+            if (NazivCheckBox == true && AdresaCheckBox == false && GodinaCheckBox == false  ) {
+                let naziv = $("#searchText").val();
+                for (let i = 0; i < listaFitnesCentara.length; i++) {
+                    if (listaFitnesCentara[i].Naziv === naziv)
+                    {
+                        console.log("Usao u naziv true");
+                        array.push(listaFitnesCentara[i]);
+                    }
+                }
+            }
+            if (NazivCheckBox == false && AdresaCheckBox == true && GodinaCheckBox == false) {
+                let adresa = $("#searchText1").val();
+                let UlicaIBroj = adresa.split(',')[0];
+                let MestoIGrad = adresa.split(',')[1];
+                let PostanskiBroj = adresa.split(',')[2];
+                for (let i = 0; i < listaFitnesCentara.length; i++) {
+                    if (listaFitnesCentara[i].Adresa.UlicaIBroj === UlicaIBroj && listaFitnesCentara[i].Adresa.MestoIGrad === MestoIGrad
+                        && listaFitnesCentara[i].Adresa.PostanskiBroj === PostanskiBroj)
+                    {
+                        console.log("Usao u adresa true");
+                        array.push(listaFitnesCentara[i]);
+                    }
+                }
+            }
+            if (NazivCheckBox == false && AdresaCheckBox == false && GodinaCheckBox == true) {
+                let godinaMinimum = $("#searchText2").val();
+                let godinaMaximum = $("#searchText3").val();
+
+                for (let i = 0; i < listaFitnesCentara.length; i++) {
+                    if (listaFitnesCentara[i].GodinaOtvaranja >= godinaMinimum && listaFitnesCentara[i].GodinaOtvaranja <= godinaMaximum)
+                    {
+                        console.log("Usao u godina true");
+                        array.push(listaFitnesCentara[i]);
+                    }
+                }
+            }
+            
+            if (NazivCheckBox == true && AdresaCheckBox == true && GodinaCheckBox == false) {
+                let naziv = $("#searchText").val();
+                let adresa = $("#searchText1").val();
+                let UlicaIBroj = adresa.split(',')[0];
+                let MestoIGrad = adresa.split(',')[1];
+                let PostanskiBroj = adresa.split(',')[2];
+                for (let i = 0; i < listaFitnesCentara.length; i++) {
+                    if (listaFitnesCentara[i].Naziv === naziv || listaFitnesCentara[i].Adresa.UlicaIBroj === UlicaIBroj
+                        && listaFitnesCentara[i].Adresa.MestoIGrad === MestoIGrad && listaFitnesCentara[i].Adresa.PostanskiBroj === PostanskiBroj)
+                    {
+                        console.log("Usao u naziv i adresa true");
+                        array.push(listaFitnesCentara[i]);
+                    }
+                }
+            }
+            if (NazivCheckBox == true && AdresaCheckBox == false && GodinaCheckBox == true) {
+                let naziv = $("#searchText").val();
+
+                let godinaMinimum = $("#searchText2").val();
+
+                let godinaMaximum = $("#searchText3").val();
+
+                for (let i = 0; i < listaFitnesCentara.length; i++) {
+                    if (listaFitnesCentara[i].Naziv === naziv
+                        || (listaFitnesCentara[i].GodinaOtvaranja >= godinaMinimum && listaFitnesCentara[i].GodinaOtvaranja <= godinaMaximum)) {
+                        console.log("Usao u naziv i godina true");
+                        array.push(listaFitnesCentara[i]);
+                    }
+                }
+            }
+
+            if (NazivCheckBox == false && AdresaCheckBox == true && GodinaCheckBox == true) {
+                let adresa = $("#searchText1").val();
+
+                let godinaMinimum = $("#searchText2").val();
+
+                let godinaMaximum = $("#searchText3").val();
+
+                let UlicaIBroj = adresa.split(',')[0];
+                let MestoIGrad = adresa.split(',')[1];
+                let PostanskiBroj = adresa.split(',')[2];
+                for (let i = 0; i < listaFitnesCentara.length; i++) {
+                    if ((listaFitnesCentara[i].Adresa.UlicaIBroj === UlicaIBroj && listaFitnesCentara[i].Adresa.MestoIGrad == MestoIGrad
+                        && listaFitnesCentara[i].Adresa.PostanskiBroj === PostanskiBroj)
+                        || (listaFitnesCentara[i].GodinaOtvaranja >= godinaMinimum && listaFitnesCentara[i].GodinaOtvaranja <= godinaMaximum)) {
+                        console.log("Usao u godina i adresa true");
+                        array.push(listaFitnesCentara[i]);
+                    }
+                }
+            }
+            if (NazivCheckBox == true && AdresaCheckBox == true && GodinaCheckBox == true) {
+                let naziv = $("#searchText").val();
+
+                let adresa = $("#searchText1").val();
+
+                let godinaMinimum = $("#searchText2").val();
+
+                let godinaMaximum = $("#searchText3").val();
+
+                let UlicaIBroj = adresa.split(',')[0];
+                let MestoIGrad = adresa.split(',')[1];
+                let PostanskiBroj = adresa.split(',')[2];
+                for (let i = 0; i < listaFitnesCentara.length; i++) {
+                    if (listaFitnesCentara[i].Naziv === naziv
+                        || (listaFitnesCentara[i].Adresa.UlicaIBroj === UlicaIBroj  && listaFitnesCentara[i].Adresa.MestoIGrad == MestoIGrad
+                            && listaFitnesCentara[i].Adresa.PostanskiBroj === PostanskiBroj)
+                        || (listaFitnesCentara[i].GodinaOtvaranja >= godinaMinimum && listaFitnesCentara[i].GodinaOtvaranja <= godinaMaximum))
+                    {
+                        console.log("Usao u naziv ,adresa i godina true true");
+                        array.push(listaFitnesCentara[i]);
+                    }
+                }
+            }
+            
+            let tableOfFitnes = '<table id="myTable"  class="tableOfFitnes table table-bordered table-striped results" name="tableOfFitnes" border="1" align="center">';
+            tableOfFitnes += '<thead><tr class="trr"><th class="tableHeaders"></th><th class="tableHeaders" >Naziv</th><th class="tableHeaders">Adresa</th><th class="tableHeaders">Godina otvaranja</th><th class="tableHeaders">Detaljan prikaz</th></tr></thead>';
+            tableOfFitnes += '<tbody id="tabela">';
+
+            let brojac = 0;
+            for (element in array) {
+                brojac += 1;
+                let fitnesCentar = '<td align="center">' + brojac + '</td>';
+                fitnesCentar += '<td align="center">' + array[element].Naziv + '</td>';
+                fitnesCentar += '<td align="center" class="productClass">' + array[element].Adresa.UlicaIBroj + ', ' + array[element].Adresa.MestoiGrad + ', ' + array[element].Adresa.PostanskiBroj + '</td>';
+                fitnesCentar += '<td align="center">' + array[element].GodinaOtvaranja + '</td>';
+                fitnesCentar += '<td align="center"> <a class="two" href="detalji.html?naziv=' + array[element].Naziv + '"><b>Detalji</b></a></td>';
+                tableOfFitnes += '<tr>' + fitnesCentar + '</tr>';
+
+            }
+            tableOfFitnes += '</tbody>';
+            tableOfFitnes += '</table>';
+            $('#content').html(tableOfFitnes);
+            console.log('Fitnes Centri ucitani');
+
+        }
+    </script>
+    <style>
+        body {
+            background-color: teal;
+        }
+
+        .table th {
+            border-top: 2px solid #009578;
+            border-bottom: 2px solid #009578;
+        }
+
+        .table td,
+        .search-input {
+            font-size: 1em;
+            padding: 0.6em 1em;
+        }
+
+        .search-input {
+            border: none;
+            outline: none;
+            font-family: 'Times New Roman', Times, serif;
+            width: 85%;
+            text-align: center;
+        }
+
+        .tableOfFitnes {
+            background-color: navy;
+            border-color: white;
+            color: white;
+        }
+
+        a.two:link, a.two:visited {
+            background-color: white;
+            color: navy;
+            border: 2px solid teal;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        a.two:hover, a.two:active {
+            background-color: teal;
+            color: white;
+        }
+
+
+        .tableHeaders {
+            color: white;
+            background-color: darkred;
+            font-size: 20px;
+            text-align: center;
+        }
+
+        tr:nth-child(even) {
+            background-color: darkred;
+        }
+
+        .navbar a, .navbar #logOutButton {
+            text-align: center;
+            text-decoration: solid;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 40px;
+            color: navy;
+            padding: 20px 20px;
+            background-color: teal;
+        }
+
+        #logOutButton {
+            border:none;
+        }
+
+        #fitnesCentri { /*za naslov*/
+            font-size: 60px;
+            font-family: 'Times New Roman', Times, serif;
+            color: navy;
+        }
+         #kombinovana,#ziva,#so { /*za naslov*/
+            font-size: 40px;
+            font-family: 'Times New Roman', Times, serif;
+            color: navy;
+         }
+
+        .navbar a:hover {
+            background-color: navy;
+            color: lightgreen;
+        }
+
+        .navbar #logOutButton:hover {
+            background-color: navy;
+            color: lightgreen;
+        }
+
+        .header {
+            background-color: teal;
+            text-align: center;
+        }
+
+        #register {
+            text-align: right;
+        }
+
+        #searchText, #searchText1,#searchText2,#searchText3,#myInput {
+            padding: 20px;
+            margin-bottom: 5px;
+            width: 180px;
+            border-width: 4px;
+            border-color: red;
+        }
+
+        .sortButtons {
+            width: 45%;
+            height: 60%;
+            background-color: lightblue;
+            color: navy;
+            font-size: 20px;
+        }
+
+            .sortButtons:hover {
+                background-color: teal;
+                color: white;
+            }
+
+
+        #searchButton {
+            
+            background-color: lightblue;
+            color: navy;
+            font-size: 20px;
+        }
+
+            #searchButton:hover {
+                background-color: teal;
+                color: white;
+            }
+    </style>
+
+
+</head>
+<body>
+    <div class="header">
+        <span class="navbar">
+            <a href="Index.html"><b>HOME</b></a>
+            <a id="register" href="Registracija.html"><b>REGISTER</b></a>
+            <a id="logIn"href="Login.html"><b>LOG IN</b></a>
+            <a id="profile"href="profile.html"><b>PROFILE</b></a>
+            <button id="logOutButton"><b>LOG OUT</b></button>
+            
+        </span>
+        <br/><br />
+        <hr id="razdvojnaLinija">
+    </div>
+
+    <div align="center"><h1 id="fitnesCentri">Fitnes centri</h1> </div>
+
+    <div id="content"></div>
+    <br/>
+    <br/>
+    <div align="center">
+        <h1 id="kombinovana">Kombinovana pretraga</h1>
+        <div align="center" style="color:navy; font-size:30px;">
+            <b>Naziv:</b><input type="checkbox" id="nazivCheckBox">
+            <b>Adresa:</b><input type="checkbox" id="adresaCheckBox">
+            <b>Godina:</b><input type="checkbox" id="godinaCheckBox">
+        </div>
+        <input type="text" id="searchText" placeholder="Unesite naziv za pretragu..." />
+        <input type="text" id="searchText1" placeholder="Unesite adresu za pretragu..." />
+        <input type="number" id="searchText2" min="2000" max="2022" placeholder="2000">
+        <input type="number" id="searchText3" min="2000" max="2022" placeholder="2022">
+        <button id="searchButton">PRETRAGA</button>
+        <br />
+        <br />
+
+        <h1 id="ziva">Živa pretraga</h1>
+        <input type="text" id="myInput" placeholder="Unesite tekst za pretragu..." />
+
+        <br />
+        <br />
+        <h1 id="so">Sortiranja</h1>
+        <span>
+            <button class="sortButtons" onclick="sortTableByNameRising()"><b>Po imenu rastuće</b></button>
+            <button class="sortButtons" onclick="sortTableByNameFailing()"><b>Po imenu opadajuće</b></button>
+            <br />
+            <br />
+            <button class="sortButtons" onclick="sortTableByAddressRising()"><b>Po adresi rastuće</b></button>
+            <button class="sortButtons" onclick="sortTableByAddressFailing()"><b>Po adresi opadajuće</b></button>
+            <br />
+            <br />
+            <button class="sortButtons" onclick="sortTableByYearRising()"><b>Po godini rastuće</b></button>
+            <button class="sortButtons" onclick="sortTableByYearFailing()"><b>Po godini opadajuće</b></button>
+
+        </span>
+    </div>
+     
+
+   
+</body>
+</html>

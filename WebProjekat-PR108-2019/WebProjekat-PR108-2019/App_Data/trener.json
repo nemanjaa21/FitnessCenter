@@ -1,0 +1,26 @@
+[
+  {
+    "FitnesCentar": "Work work work",
+    "GrupniTrening": [ "Power Hour" ],
+    "KorisnickoIme": "trener1",
+    "Lozinka": "123",
+    "Ime": "Mica",
+    "Prezime": "Micic",
+    "pol": 1,
+    "Email": "mica@gmail.com",
+    "DatumRodjenja": "28/04/1995",
+    "Uloga": 1
+  },
+  {
+    "FitnesCentar": "Energy",
+    "GrupniTrening": [ ],
+    "KorisnickoIme": "trener2",
+    "Lozinka": "123",
+    "Ime": "trener2",
+    "Prezime": "trener2",
+    "pol" :  0,
+    "Email": "trener2@gmail.com",
+    "DatumRodjenja": "12/09/1976",
+    "Uloga": 1
+  }
+]
