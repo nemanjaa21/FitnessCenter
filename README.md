@@ -1,1 +1,1 @@
-# Web1-Projekat-FitnesCentar
+# Projekat iz predmeta Web programiranje 1
